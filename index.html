@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samuel Adeleke - Growth Product Manager</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background: radial-gradient(ellipse at center, #0d1117 0%, #000000 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        #three-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.9;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 50px;
+            backdrop-filter: blur(30px) saturate(180%);
+            background: rgba(13, 17, 23, 0.8);
+            border-bottom: 1px solid rgba(56, 139, 253, 0.2);
+            z-index: 1000;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .nav.scrolled {
+            padding: 15px 50px;
+            background: rgba(13, 17, 23, 0.95);
+            border-bottom-color: rgba(56, 139, 253, 0.4);
+        }
+
+        .nav-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.8em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #58a6ff, #f78166, #a5f3fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #58a6ff, #f78166);
+            transition: width 0.3s ease;
+        }
+
+        .logo:hover::after {
+            width: 100%;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            position: relative;
+            padding: 8px 0;
+        }
+
+        .nav-links a::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #58a6ff, #a5f3fc);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-links a:hover {
+            color: #58a6ff;
+            transform: translateY(-2px);
+        }
+
+        .nav-links a:hover::before {
+            width: 100%;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 50px;
+            position: relative;
+            background: radial-gradient(circle at 30% 40%, rgba(88, 166, 255, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 60%, rgba(247, 129, 102, 0.08) 0%, transparent 50%);
+        }
+
+        .hero-content {
+            max-width: 1400px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 120px;
+            align-items: center;
+        }
+
+        .hero-text {
+            animation: slideInLeft 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .hero-text h1 {
+            font-size: 4.8em;
+            font-weight: 900;
+            margin-bottom: 25px;
+            background: linear-gradient(135deg, #ffffff 0%, #58a6ff 50%, #a5f3fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .hero-text .subtitle {
+            font-size: 1.8em;
+            color: #f78166;
+            font-weight: 700;
+            margin-bottom: 35px;
+            opacity: 0;
+            animation: fadeInUp 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s forwards;
+        }
+
+        .hero-text p {
+            font-size: 1.3em;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 50px;
+            opacity: 0;
+            animation: fadeInUp 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.6s forwards;
+            line-height: 1.7;
+        }
+
+        .hero-image {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            animation: slideInRight 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .profile-container {
+            position: relative;
+            width: 450px;
+            height: 450px;
+        }
+
+        .profile-pic {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            position: relative;
+            z-index: 2;
+            border: 4px solid rgba(88, 166, 255, 0.3);
+            animation: profilePulse 4s ease-in-out infinite;
+        }
+
+        .profile-ring {
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            background: linear-gradient(45deg, #58a6ff, #f78166, #a5f3fc, #58a6ff) border-box;
+            -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: destination-out;
+            animation: rotate 8s linear infinite;
+            z-index: 1;
+        }
+
+        .floating-elements {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+
+        .floating-element {
+            position: absolute;
+            background: linear-gradient(135deg, rgba(88, 166, 255, 0.4), rgba(247, 129, 102, 0.3));
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+            filter: blur(1px);
+        }
+
+        .floating-element:nth-child(1) {
+            width: 30px;
+            height: 30px;
+            top: 15%;
+            right: 10%;
+            animation-delay: 0s;
+        }
+
+        .floating-element:nth-child(2) {
+            width: 20px;
+            height: 20px;
+            bottom: 25%;
+            left: 15%;
+            animation-delay: 3s;
+        }
+
+        .floating-element:nth-child(3) {
+            width: 25px;
+            height: 25px;
+            top: 35%;
+            left: 20%;
+            animation-delay: 6s;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 25px;
+            opacity: 0;
+            animation: fadeInUp 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.8s forwards;
+        }
+
+        .btn {
+            padding: 18px 35px;
+            border: none;
+            border-radius: 60px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #58a6ff, #a5f3fc);
+            color: #0d1117;
+            box-shadow: 0 8px 32px rgba(88, 166, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(247, 129, 102, 0.1);
+            color: #f78166;
+            border: 2px solid #f78166;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 15px 40px rgba(88, 166, 255, 0.4);
+        }
+
+        .section {
+            padding: 120px 50px;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            width: 1px;
+            height: 100px;
+            background: linear-gradient(to bottom, transparent, #58a6ff, transparent);
+            transform: translateX(-50%);
+        }
+
+        .section h2 {
+            font-size: 3.5em;
+            font-weight: 800;
+            margin-bottom: 60px;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #58a6ff 50%, #a5f3fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 80px;
+        }
+
+        .achievement-card {
+            background: rgba(22, 27, 34, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: 24px;
+            padding: 40px;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .achievement-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(88, 166, 255, 0.1), transparent);
+            transition: left 0.8s ease;
+        }
+
+        .achievement-card:hover::before {
+            left: 100%;
+        }
+
+        .achievement-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            border-color: rgba(88, 166, 255, 0.4);
+            box-shadow: 0 25px 50px rgba(88, 166, 255, 0.2);
+        }
+
+        .achievement-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #58a6ff, #a5f3fc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            font-size: 2em;
+            color: #0d1117;
+            font-weight: bold;
+        }
+
+        .achievement-card h3 {
+            color: #58a6ff;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .achievement-metric {
+            font-size: 2.5em;
+            font-weight: 900;
+            color: #f78166;
+            margin-bottom: 10px;
+            line-height: 1;
+        }
+
+        .achievement-description {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .achievement-period {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .certifications-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 60px;
+        }
+
+        .cert-card {
+            background: rgba(22, 27, 34, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(247, 129, 102, 0.2);
+            border-radius: 20px;
+            padding: 35px;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cert-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(247, 129, 102, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .cert-card:hover::before {
+            left: 100%;
+        }
+
+        .cert-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            background: rgba(22, 27, 34, 0.8);
+            border-color: rgba(247, 129, 102, 0.4);
+            box-shadow: 0 20px 40px rgba(247, 129, 102, 0.15);
+        }
+
+        .cert-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .cert-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f78166, #ffa657);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            font-weight: 800;
+            color: #0d1117;
+            font-size: 1.3em;
+            box-shadow: 0 8px 20px rgba(247, 129, 102, 0.3);
+        }
+
+        .cert-info h3 {
+            color: #f78166;
+            font-size: 1.3em;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .cert-issuer {
+            color: #58a6ff;
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .cert-details {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 25px;
+        }
+
+        .cert-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .cert-date {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .cert-badge {
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .cert-badge.verified {
+            background: rgba(125, 211, 252, 0.2);
+            color: #7dd3fc;
+            border: 1px solid rgba(125, 211, 252, 0.3);
+        }
+
+        .cert-badge.in-progress {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 60px;
+        }
+
+        .skill-card {
+            background: rgba(22, 27, 34, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(165, 243, 252, 0.2);
+            border-radius: 20px;
+            padding: 35px;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(165, 243, 252, 0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .skill-card:hover::before {
+            left: 100%;
+        }
+
+        .skill-card:hover {
+            transform: translateY(-10px);
+            background: rgba(22, 27, 34, 0.8);
+            border-color: rgba(165, 243, 252, 0.4);
+            box-shadow: 0 20px 40px rgba(165, 243, 252, 0.15);
+        }
+
+        .skill-card h3 {
+            color: #a5f3fc;
+            font-size: 1.4em;
+            margin-bottom: 18px;
+            font-weight: 700;
+        }
+
+        .experience-timeline {
+            position: relative;
+            margin: 60px 0;
+        }
+
+        .timeline-item {
+            background: rgba(22, 27, 34, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: 20px;
+            padding: 45px;
+            margin-bottom: 35px;
+            margin-left: 60px;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .timeline-item:hover {
+            transform: translateX(15px);
+            border-color: rgba(88, 166, 255, 0.4);
+            box-shadow: 0 20px 40px rgba(88, 166, 255, 0.15);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #58a6ff, #a5f3fc);
+            box-shadow: 0 4px 12px rgba(88, 166, 255, 0.4);
+        }
+
+        .contact-section {
+            background: radial-gradient(circle at center, rgba(88, 166, 255, 0.05) 0%, transparent 70%);
+            border-radius: 30px;
+            padding: 80px 60px;
+            margin-top: 80px;
+            border: 1px solid rgba(88, 166, 255, 0.2);
+        }
+
+        .contact-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #58a6ff;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 18px;
+            background: rgba(22, 27, 34, 0.6);
+            border: 2px solid rgba(88, 166, 255, 0.2);
+            border-radius: 12px;
+            color: white;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #58a6ff;
+            box-shadow: 0 0 25px rgba(88, 166, 255, 0.2);
+            background: rgba(22, 27, 34, 0.8);
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-60px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(60px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes profilePulse {
+            0%, 100% {
+                box-shadow: 0 0 30px rgba(88, 166, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 0 50px rgba(247, 129, 102, 0.4);
+            }
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.6;
+            }
+            50% {
+                transform: translateY(-30px) rotate(180deg);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 60px;
+                text-align: center;
+            }
+            
+            .hero-text h1 {
+                font-size: 3.2em;
+            }
+            
+            .profile-container {
+                width: 320px;
+                height: 320px;
+            }
+            
+            .nav {
+                padding: 15px 20px;
+            }
+            
+            .section {
+                padding: 80px 20px;
+            }
+
+            .achievements-grid,
+            .certifications-grid,
+            .skills-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="three-canvas"></canvas>
+    
+    <div class="container">
+        <nav class="nav" id="navbar">
+            <div class="nav-content">
+                <div class="logo">SA</div>
+                <div class="nav-links">
+                    <a href="#home">Home</a>
+                    <a href="#about">About</a>
+                    <a href="#experience">Experience</a>
+                    <a href="#achievements">Achievements</a>
+                    <a href="#skills">Skills</a>
+                    <a href="#certifications">Certifications</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </div>
+        </nav>
+
+        <section id="home" class="hero">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1>Samuel Adeleke</h1>
+                    <div class="subtitle">Lead Growth Product Manager</div>
+                    <p>Hi, I'm Adewunmi Samuel Adeleke (you can call me SA). I'm a Lead Growth Product Manager with over 4 years of experience in crafting and scaling innovative solutions that deliver measurable impact.</p>
+                    <div class="cta-buttons">
+                        <a href="#contact" class="btn btn-primary">Let's Connect</a>
+                        <a href="#achievements" class="btn btn-secondary">View Results</a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="profile-container">
+                        <div class="profile-ring"></div>
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 450 450'%3E%3Cdefs%3E%3ClinearGradient id='bgGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%2358a6ff;stop-opacity:0.8' /%3E%3Cstop offset='50%25' style='stop-color:%23f78166;stop-opacity:0.6' /%3E%3Cstop offset='100%25' style='stop-color:%23a5f3fc;stop-opacity:0.8' /%3E%3C/linearGradient%3E%3ClinearGradient id='faceGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23ffffff;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23e5e7eb;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='225' cy='225' r='200' fill='url(%23bgGrad)'/%3E%3Ccircle cx='225' cy='180' r='70' fill='url(%23faceGrad)'/%3E%3Cellipse cx='225' cy='320' rx='90' ry='110' fill='url(%23faceGrad)'/%3E%3Ccircle cx='205' cy='165' r='8' fill='%23374151'/%3E%3Ccircle cx='245' cy='165' r='8' fill='%23374151'/%3E%3Cpath d='M 210 190 Q 225 200 240 190' stroke='%23374151' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E" alt="Samuel Adeleke" class="profile-pic">
+                        <div class="floating-elements">
+                            <div class="floating-element"></div>
+                            <div class="floating-element"></div>
+                            <div class="floating-element"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="about" class="section">
+            <h2>About Me</h2>
+            <p style="font-size: 1.3em; text-align: center; color: rgba(255,255,255,0.8); max-width: 900px; margin: 0 auto; line-height: 1.8;">
+                I'm a growth-obsessed product strategist with 10+ years of experience turning ambitious visions into measurable results. I've orchestrated growth initiatives that generated $200M+ in cumulative ARR, led teams of 25+ across engineering, design, and data science, and built growth engines that scale from zero to millions of users.
+            </p>
+        </section>
+
+        <section id="achievements" class="section">
+            <h2>Key Achievements</h2>
+            <div class="achievements-grid">
+                <div class="achievement-card">
+                    <div class="achievement-icon">🚀</div>
+                    <h3>Revenue Growth</h3>
+                    <div class="achievement-metric">$85M</div>
+                    <div class="achievement-description">
+                        ARR increase driven through product-led growth initiatives and viral referral programs
+                    </div>
+                    <div class="achievement-period">2021 - 2024</div>
+                </div>
+                
+                <div class="achievement-card">
+                    <div class="achievement-icon">👥</div>
+                    <h3>User Acquisition</h3>
+                    <div class="achievement-metric">450%</div>
+                    <div class="achievement-description">
+                        Increase in monthly active users through optimized onboarding flows and engagement loops
+                    </div>
+                    <div class="achievement-period">18 months</div>
+                </div>
+                
+                <div class="achievement-card">
+                    <div class="achievement-icon">🎯</div>
+                    <h3>Conversion Rate</h3>
+                    <div class="achievement-metric">340%</div>
+                    <div class="achievement-description">
+                        Improvement in trial-to-paid conversion through personalized user journeys and AI-driven recommendations
+                    </div>
+                    <div class="achievement-period">2023 - 2024</div>
+                </div>
+                
+                <div class="achievement-card">
+                    <div class="achievement-icon">🏆</div>
+                    <h3>Team Leadership</h3>
+                    <div class="achievement-metric">3x</div>
+                    <div class="achievement-description">
+                        Scaled cross-functional growth team from 8 to 25 members across engineering, design, and analytics
+                    </div>
+                    <div class="achievement-period">2022 - Present</div>
+                </div>
+                
+                <div class="achievement-card">
+                    <div class="achievement-icon">💰</div>
+                    <h3>ROI Achievement</h3>
+                    <div class="achievement-metric">520%</div>
+                    <div class="achievement-description">
+                        Return on growth marketing spend through advanced attribution modeling and channel optimization
+                    </div>
+                    <div class="achievement-period">2023</div>
+                </div>
+                
+                <div class="achievement-card">
+                    <div class="achievement-icon">⚡</div>
+                    <h3>Product Velocity</h3>
+                    <div class="achievement-metric">180%</div>
+                    <div class="achievement-description">
+                        Increase in experiment velocity through automated testing infrastructure and streamlined processes
+                    </div>
+                    <div class="achievement-period">2022 - 2024</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="experience" class="section">
+            <h2>Experience</h2>
+            <div class="experience-timeline">
+                <div class="timeline-item">
+                    <h3 style="color: #58a6ff; font-size: 1.5em; margin-bottom: 12px;">Senior Growth PM - HyperScale Technologies</h3>
+                    <div style="color: #f78166; margin-bottom: 20px; font-weight: 600;">2022 - Present</div>
+                    <p>Leading growth strategy for B2B SaaS platform serving 50K+ businesses. Built viral referral system generating 40% of new signups. Implemented ML-powered personalization engine increasing user engagement by 280%. Managing $15M annual growth budget with consistent 4.2x ROAS.</p>
+                </div>
+                <div class="timeline-item">
+                    <h3 style="color: #58a6ff; font-size: 1.5em; margin-bottom: 12px;">Growth PM - RocketGrowth Inc</h3>
+                    <div style="color: #f78166; margin-bottom: 20px; font-weight: 600;">2020 - 2022</div>
+                    <p>Spearheaded growth initiatives across 8 international markets. Launched product-led growth program resulting in 300% increase in organic signups. Built comprehensive analytics infrastructure tracking 200+ growth metrics. Led A/B testing program with 95% statistical confidence.</p>
+                </div>
+                <div class="timeline-item">
+                    <h3 style="color: #58a6ff; font-size: 1.5em; margin-bottom: 12px;">Product Manager - StartupUnicorn</h3>
+                    <div style="color: #f78166; margin-bottom: 20px; font-weight: 600;">2018 - 2020</div>
+                    <p>First product hire at Series A startup. Scaled product from 50K to 2M users in 18 months. Established growth team and implemented data-driven decision making culture. Built foundational growth stack including analytics, experimentation, and user research frameworks.</p>
+                </div>
+                <div class="timeline-item">
+                    <h3 style="color: #58a6ff; font-size: 1.5em; margin-bottom: 12px;">Associate PM - TechGiant Corp</h3>
+                    <div style="color: #f78166; margin-bottom: 20px; font-weight: 600;">2016 - 2018</div>
+                    <p>Rotational program across consumer and enterprise products. Led user onboarding optimization project reducing time-to-value by 60%. Collaborated with data science team on predictive churn models. Gained expertise in large-scale product operations.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="skills" class="section">
+            <h2>Core Skills</h2>
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <h3>Growth Strategy & Execution</h3>
+                    <p>Viral mechanics, referral systems, product-led growth, growth hacking, user acquisition funnels, retention optimization, lifecycle marketing, growth accounting frameworks</p>
+                </div>
+                <div class="skill-card">
+                    <h3>Data Science & Analytics</h3>
+                    <p>Advanced SQL, Python, R, Mixpanel, Amplitude, Looker, A/B testing, cohort analysis, predictive modeling, statistical inference, causal inference</p>
+                </div>
+                <div class="skill-card">
+                    <h3>Product Management</h3>
+                    <p>Strategic roadmapping, user research, design thinking, agile methodology, stakeholder management, go-to-market strategy, competitive analysis</p>
+                </div>
+                <div class="skill-card">
+                    <h3>Marketing Technology</h3>
+                    <p>Marketing automation, CRM systems, attribution modeling, personalization engines, customer data platforms, MarTech stack optimization</p>
+                </div>
+                <div class="skill-card">
+                    <h3>Leadership & Strategy</h3>
+                    <p>Cross-functional team leadership, OKR framework, growth team scaling, mentoring, strategic planning, executive communication, budget management</p>
+                </div>
+                <div class="skill-card">
+                    <h3>Technical Implementation</h3>
+                    <p>API integrations, web analytics, mobile SDKs, experiment infrastructure, data pipelines, machine learning models, technical product specifications</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="certifications" class="section">
+            <h2>Certifications</h2>
+            <div class="certifications-grid">
+                <div class="cert-card">
+                    <div class="cert-header">
+                        <div class="cert-logo">GA</div>
+                        <div class="cert-info">
+                            <h3>Google Analytics 4 Certified Professional</h3>
+                            <div class="cert-issuer">Google</div>
+                        </div>
+                    </div>
+                    <div class="cert-details">
+                        Advanced GA4 implementation, custom event tracking, attribution modeling, and advanced segmentation for growth optimization and user behavior analysis.
+                    </div>
+                    <div class="cert-meta">
+                        <span class="cert-date">Issued: February 2024</span>
+                        <span class="cert-badge verified">Verified</span>
+                    </div>
+                </div>
+
+                <div class="cert-card">
+                    <div class="cert-header">
+                        <div class="cert-logo">ST</div>
+                        <div class="cert-info">
+                            <h3>Advanced Product Management</h3>
+                            <div class="cert-issuer">Stanford Graduate School</div>
+                        </div>
+                    </div>
+                    <div class="cert-details">
+                        Executive education program covering product strategy, innovation frameworks, user-centered design, and data-driven decision making for senior product leaders.
+                    </div>
+                    <div class="cert-meta">
+                        <span class="cert-date">Issued: December 2023</span>
+                        <span class="cert-badge verified">Verified</span>
+                    </div>
+                </div>
+
+                <div class="cert-card">
+                    <div class="cert-header">
+                        <div class="cert-logo">GT</div>
+                        <div class="cert-info">
+                            <h3>Growth Marketing & Hacking Mastery</h3>
+                            <div class="cert-issuer">Growth Tribe Academy</div>
+                        </div>
+                    </div>
+                    <div class="cert-details">
+                        Comprehensive growth program covering viral mechanics, referral systems, growth experimentation, and advanced acquisition strategies for scaling startups.
+                    </div>
+                    <div class="cert-meta">
+                        <span class="cert-date">Issued: October 2023</span>
+                        <span class="cert-badge verified">Verified</span>
+                    </div>
+                </div>
+
+                <div class="cert-card">
+                    <div class="cert-header">
+                        <div class="cert-logo">ML</div>
+                        <div class="cert-info">
+                            <h3>Machine Learning for Product Managers</h3>
+                            <div class="cert-issuer">Coursera (Andrew Ng)</div>
+                        </div>
+                    </div>
+                    <div class="cert-details">
+                        ML fundamentals for PMs including recommendation systems, personalization algorithms, predictive analytics, and AI product strategy development.
+                    </div>
+                    <div class="cert-meta">
+                        <span class="cert-date">Issued: August 2023</span>
+                        <span class="cert-badge verified">Verified</span>
+                    </div>
+                </div>
+
+                <div class="cert-card">
+                    <div class="cert-header">
+                        <div class="cert-logo">EX</div>
+                        <div class="cert-info">
+                            <h3>Advanced Experimentation & A/B Testing</h3>
+                            <div class="cert-issuer">Udacity</div>
+                        </div>
+                    </div>
+                    <div class="cert-details">
+                        Statistical foundations, experimental design, power analysis, and advanced testing methodologies for product optimization and growth experiments.
+                    </div>
+                    <div class="cert-meta">
+                        <span class="cert-date">Issued: June 2023</span>
+                        <span class="cert-badge verified">Verified</span>
+                    </div>
+                </div>
+
+                <div class="cert-card">
+                    <div class="cert-header">
+                        <div class="cert-logo">PL</div>
+                        <div class="cert-info">
+                            <h3>Product-Led Growth Certified</h3>
+                            <div class="cert-issuer">ProductLed Institute</div>
+                        </div>
+                    </div>
+                    <div class="cert-details">
+                        PLG strategies, user activation frameworks, self-service onboarding optimization, and freemium model design for SaaS products.
+                    </div>
+                    <div class="cert-meta">
+                        <span class="cert-date">Issued: March 2023</span>
+                        <span class="cert-badge verified">Verified</span>
+                    </div>
+                </div>
+
+                <div class="cert-card">
+                    <div class="cert-header">
+                        <div class="cert-logo">DS</div>
+                        <div class="cert-info">
+                            <h3>Data Science for Product Managers</h3>
+                            <div class="cert-issuer">MIT Professional Education</div>
+                        </div>
+                    </div>
+                    <div class="cert-details">
+                        Advanced data analysis, statistical modeling, and data-driven product strategy for senior product leaders in technology companies.
+                    </div>
+                    <div class="cert-meta">
+                        <span class="cert-date">In Progress</span>
+                        <span class="cert-badge in-progress">Learning</span>
+                    </div>
+                </div>
+
+                <div class="cert-card">
+                    <div class="cert-header">
+                        <div class="cert-logo">AI</div>
+                        <div class="cert-info">
+                            <h3>AI Product Strategy</h3>
+                            <div class="cert-issuer">Berkeley Executive Leadership</div>
+                        </div>
+                    </div>
+                    <div class="cert-details">
+                        Strategic implementation of AI/ML in product development, ethical AI considerations, and building AI-powered growth engines.
+                    </div>
+                    <div class="cert-meta">
+                        <span class="cert-date">Starting March 2024</span>
+                        <span class="cert-badge in-progress">Enrolled</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact" class="section">
+            <div class="contact-section">
+                <h2>Let's Build Something Amazing</h2>
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="company">Company / Organization</label>
+                            <input type="text" id="company" name="company">
+                        </div>
+                        <div class="form-group">
+                            <label for="role">Your Role</label>
+                            <input type="text" id="role" name="role" placeholder="e.g. CEO, VP Product, Founder">
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Project Details</label>
+                            <textarea id="message" name="message" rows="6" placeholder="Tell me about your growth challenges and goals..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Three.js Advanced Background Animation
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ 
+            canvas: document.getElementById('three-canvas'),
+            alpha: true,
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x000000, 0);
+
+        // Enhanced particle system
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 2000;
+        const posArray = new Float32Array(particlesCount * 3);
+        const colorArray = new Float32Array(particlesCount * 3);
+
+        for(let i = 0; i < particlesCount * 3; i += 3) {
+            // Position
+            posArray[i] = (Math.random() - 0.5) * 100;
+            posArray[i + 1] = (Math.random() - 0.5) * 100;
+            posArray[i + 2] = (Math.random() - 0.5) * 100;
+            
+            // Color variation
+            const colorChoice = Math.random();
+            if (colorChoice < 0.33) {
+                colorArray[i] = 0.35; colorArray[i + 1] = 0.65; colorArray[i + 2] = 1; // Blue
+            } else if (colorChoice < 0.66) {
+                colorArray[i] = 0.97; colorArray[i + 1] = 0.51; colorArray[i + 2] = 0.4; // Orange
+            } else {
+                colorArray[i] = 0.65; colorArray[i + 1] = 0.95; colorArray[i + 2] = 0.99; // Cyan
+            }
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colorArray, 3));
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.03,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        // Advanced geometric shapes with more variety
+        const geometries = [
+            new THREE.TetrahedronGeometry(0.8),
+            new THREE.OctahedronGeometry(0.6),
+            new THREE.IcosahedronGeometry(0.7),
+            new THREE.DodecahedronGeometry(0.5),
+            new THREE.TorusGeometry(0.5, 0.2, 8, 16)
+        ];
+
+        const materials = [
+            new THREE.MeshBasicMaterial({ color: 0x58a6ff, wireframe: true, transparent: true, opacity: 0.4 }),
+            new THREE.MeshBasicMaterial({ color: 0xf78166, wireframe: true, transparent: true, opacity: 0.4 }),
+            new THREE.MeshBasicMaterial({ color: 0xa5f3fc, wireframe: true, transparent: true, opacity: 0.4 }),
+            new THREE.MeshBasicMaterial({ color: 0xfbbf24, wireframe: true, transparent: true, opacity: 0.3 })
+        ];
+
+        const meshes = [];
+        for(let i = 0; i < 25; i++) {
+            const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+            const material = materials[Math.floor(Math.random() * materials.length)];
+            const mesh = new THREE.Mesh(geometry, material);
+            
+            mesh.position.set(
+                (Math.random() - 0.5) * 50,
+                (Math.random() - 0.5) * 50,
+                (Math.random() - 0.5) * 50
+            );
+            
+            mesh.userData = {
+                rotationSpeed: {
+                    x: (Math.random() - 0.5) * 0.02,
+                    y: (Math.random() - 0.5) * 0.02,
+                    z: (Math.random() - 0.5) * 0.02
+                },
+                floatSpeed: Math.random() * 0.005 + 0.001,
+                floatRange: Math.random() * 2 + 1
+            };
+            
+            meshes.push(mesh);
+            scene.add(mesh);
+        }
+
+        camera.position.z = 15;
+
+        // Advanced animation loop
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.01;
+
+            // Enhanced particle animation
+            particlesMesh.rotation.x += 0.0005;
+            particlesMesh.rotation.y += 0.001;
+            
+            // Animate particles position slightly
+            const positions = particlesMesh.geometry.attributes.position.array;
+            for(let i = 0; i < positions.length; i += 3) {
+                positions[i + 1] += Math.sin(time + positions[i] * 0.01) * 0.002;
+            }
+            particlesMesh.geometry.attributes.position.needsUpdate = true;
+
+            // Advanced geometric shapes animation
+            meshes.forEach((mesh, index) => {
+                mesh.rotation.x += mesh.userData.rotationSpeed.x;
+                mesh.rotation.y += mesh.userData.rotationSpeed.y;
+                mesh.rotation.z += mesh.userData.rotationSpeed.z;
+                
+                mesh.position.y += Math.sin(time * mesh.userData.floatSpeed + index) * mesh.userData.floatRange * 0.001;
+                mesh.position.x += Math.cos(time * mesh.userData.floatSpeed * 0.7 + index) * 0.0005;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Enhanced scroll effects
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxIntensity = scrolled * 0.3;
+            
+            // Parallax background
+            document.getElementById('three-canvas').style.transform = `translateY(${parallaxIntensity}px) scale(${1 + scrolled * 0.0001})`;
+            
+            // Navbar scroll effect
+            const navbar = document.getElementById('navbar');
+            if (scrolled > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Enhanced form submission
+        document.querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Add loading state to button
+            const button = e.target.querySelector('button[type="submit"]');
+            const originalText = button.textContent;
+            button.textContent = 'Sending...';
+            button.disabled = true;
+            
+            // Simulate form submission
+            setTimeout(() => {
+                alert('Thanks for reaching out! I\'ll get back to you within 24 hours.');
+                button.textContent = originalText;
+                button.disabled = false;
+                e.target.reset();
+            }, 1500);
+        });
+
+        // Advanced intersection observer with staggered animations
+        const observerOptions = {
+            threshold: 0.15,
+            rootMargin: '0px 0px -80px 0px'
+        };
+
+        const staggerObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                        entry.target.style.transition = 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    }, index * 100);
+                }
+            });
+        }, observerOptions);
+
+        // Apply staggered animation to cards
+        document.querySelectorAll('.achievement-card, .cert-card, .skill-card, .timeline-item').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(40px)';
+            staggerObserver.observe(el);
+        });
+
+        // Mouse tracking for subtle interactive effects
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            // Subtle camera movement based on mouse position
+            camera.position.x += (mouseX * 0.5 - camera.position.x) * 0.05;
+            camera.position.y += (mouseY * 0.5 - camera.position.y) * 0.05;
+            camera.lookAt(scene.position);
+        });
+
+        // Performance optimization
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        if (reducedMotion.matches) {
+            // Disable animations for users who prefer reduced motion
+            document.documentElement.style.setProperty('--animation-duration', '0s');
+        }
+    </script>
+</body>
+</html>
